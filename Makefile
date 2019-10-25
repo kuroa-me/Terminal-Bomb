@@ -1,5 +1,5 @@
-CC=gcc
-CFLAGS=-O -Wall
+CC=clang
+CFLAGS=-O -Wall -g
 
 all: bomb
 
