@@ -8,6 +8,7 @@
 static void finish(int sig);
 int add_bombl();
 int add_bombs();
+int add_explo();
 
 int my_mvaddstr(int y, int x, char *str) {
   for (; x < 0; ++x) {
@@ -33,16 +34,21 @@ int main(int argc, char *argv[]) {
 
   char *temp = malloc(100);
 
-  int total = 10;
-  for( ; total>0; --total){
-    if(total%2) add_bombs();
-    else add_bombl();
-    sprintf(temp, "%d", total%2);
+  int total = 6;
+  for (; total > 0; --total) {
+    if (total % 2)
+      add_bombl();
+    else
+      add_bombs();
+    sprintf(temp, "%d", total % 2);
     addstr(temp);
     refresh();
     usleep(400000);
     clear();
   }
+  add_explo();
+  refresh();
+  usleep(400000);
 
   // Clean up
   finish(0);
@@ -85,10 +91,30 @@ int add_bombs() {
   return OK;
 }
 
+int add_explo() {
+  static char *bombs[EXPLO_HEIGHT] = {
+      EXPLO1,  EXPLO2,  EXPLO3,  EXPLO4,  EXPLO5,  EXPLO6,  EXPLO7,  EXPLO8,
+      EXPLO9,  EXPLO10, EXPLO11, EXPLO12, EXPLO13, EXPLO14, EXPLO15, EXPLO16,
+      EXPLO17, EXPLO18, EXPLO19, EXPLO20, EXPLO21, EXPLO22, EXPLO23, EXPLO24};
+
+  int i, y, x;
+  // Find start point
+  y = LINES / 2 - EXPLO_HEIGHT / 2;
+  x = COLS / 2 - EXPLO_WIDTH / 2;
+
+  for (i = 0; i < EXPLO_HEIGHT; i++) {
+    mvaddstr(y + i, x, bombs[i]);
+  }
+
+  return OK;
+}
+
 static void finish(int sig) {
-  //system("reset");
+  // system("reset");
   endwin();
   // No scroll back clear
   system("clear && printf '\e[3J'");
+  const char *s = getenv("SHELL");
+  printf("%s", s);
   exit(0);
 }
