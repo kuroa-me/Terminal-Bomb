@@ -10,12 +10,37 @@ int add_bombl();
 int add_bombs();
 int add_explo();
 
+int color_changer(char str) {
+  switch (str) {
+    case 'P':
+      attron(A_BOLD);
+      attron(COLOR_PAIR(1));
+      break;
+    case 'R':
+      attroff(A_BOLD);
+      attron(COLOR_PAIR(1));
+      break;
+    case 'Y':
+      attron(A_BOLD);
+      attron(COLOR_PAIR(2));
+    case 'O':
+      attroff(A_BOLD);
+      attron(COLOR_PAIR(2));
+      break;
+    default:
+      attroff(A_BOLD);
+      attron(COLOR_PAIR(0));
+  }
+  return OK;
+}
+
 int my_mvaddstr(int y, int x, char *str) {
   for (; x < 0; ++x) {
     if (*str == '\0') return ERR;
   }
   for (; *str != '\0'; ++x, ++str) {
     if (*str != ' ') {
+      color_changer(*str);
       if (mvaddch(y, x, *str) == ERR) return ERR;
     }
   }
@@ -31,24 +56,25 @@ int main(int argc, char *argv[]) {
   nodelay(stdscr, TRUE);
   leaveok(stdscr, TRUE);
   scrollok(stdscr, FALSE);
+  // Init color pairs
+  start_color();
+  init_pair(0, COLOR_WHITE, COLOR_BLACK);
+  init_pair(1, COLOR_RED, COLOR_BLACK);
+  init_pair(2, COLOR_YELLOW, COLOR_BLACK);
 
-  char *temp = malloc(100);
-
-  int total = 6;
+  int total = 4;
   for (; total > 0; --total) {
     if (total % 2)
       add_bombl();
     else
       add_bombs();
-    sprintf(temp, "%d", total % 2);
-    addstr(temp);
     refresh();
-    usleep(400000);
+    usleep(300000);
     clear();
   }
   add_explo();
   refresh();
-  usleep(400000);
+  usleep(500000);
 
   // Clean up
   finish(0);
@@ -67,7 +93,7 @@ int add_bombl() {
   x = COLS / 2 - BOMBL_WIDTH / 2;
 
   for (i = 0; i < BOMBL_HEIGHT; i++) {
-    mvaddstr(y + i, x, bombl[i]);
+    my_mvaddstr(y + i, x, bombl[i]);
   }
 
   return OK;
@@ -85,7 +111,7 @@ int add_bombs() {
   x = COLS / 2 - BOMBS_WIDTH / 2;
 
   for (i = 0; i < BOMBS_HEIGHT; i++) {
-    mvaddstr(y + i, x, bombs[i]);
+    my_mvaddstr(y + i, x, bombs[i]);
   }
 
   return OK;
@@ -103,7 +129,7 @@ int add_explo() {
   x = COLS / 2 - EXPLO_WIDTH / 2;
 
   for (i = 0; i < EXPLO_HEIGHT; i++) {
-    mvaddstr(y + i, x, bombs[i]);
+    my_mvaddstr(y + i, x, bombs[i]);
   }
 
   return OK;
@@ -114,7 +140,5 @@ static void finish(int sig) {
   endwin();
   // No scroll back clear
   system("clear && printf '\e[3J'");
-  const char *s = getenv("SHELL");
-  printf("%s", s);
   exit(0);
 }
